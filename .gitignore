@@ -1,0 +1,7 @@
+enumerateup/bin/
+enumerateup-android/bin/
+enumerateup-desktop/bin/
+enumerateup-html/bin/
+*.log
+*.gwt-log
+*.class

@@ -3,15 +3,20 @@ package enumerateup.screen;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
+import enumerateup.ui.Clock;
+
 public abstract class PlayScreen implements Screen {
 
 	protected int playerScore = 0;
 	protected int aiScore = 0;
 
-	private SpriteBatch batch;
+	private final Clock clock;
+	private final SpriteBatch batch;
 
 	public PlayScreen(SpriteBatch batch) {
 		this.batch = batch;
+		this.clock = new Clock(90, 0.5f, 0.5f, 0.25f);
+		clock.start();
 	}
 
 	@Override
@@ -20,7 +25,7 @@ public abstract class PlayScreen implements Screen {
 		// TODO: render player scores
 		// TODO: render input box
 		// TODO: render locked answer
-		// TODO: render timer
+		clock.render(delta);
 		batch.end();
 	}
 

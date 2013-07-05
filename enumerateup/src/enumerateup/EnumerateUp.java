@@ -10,18 +10,25 @@ import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import enumerateup.screen.NumbersScreen;
+
 public class EnumerateUp extends Game {
+	private static SpriteBatch batch;
+
 	private OrthographicCamera camera;
-	private SpriteBatch batch;
 	private Texture texture;
 	private Sprite sprite;
+
+	public static SpriteBatch getBatch() {
+		return batch;
+	}
 
 	@Override
 	public void create() {
 		float w = Gdx.graphics.getWidth();
 		float h = Gdx.graphics.getHeight();
 
-		camera = new OrthographicCamera(1, h / w);
+		camera = new OrthographicCamera(2 * w / h, 2);
 		batch = new SpriteBatch();
 
 		texture = new Texture(Gdx.files.internal("data/libgdx.png"));
@@ -33,6 +40,7 @@ public class EnumerateUp extends Game {
 		sprite.setSize(0.9f, 0.9f * sprite.getHeight() / sprite.getWidth());
 		sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
 		sprite.setPosition(-sprite.getWidth() / 2, -sprite.getHeight() / 2);
+		setScreen(new NumbersScreen(batch));
 	}
 
 	@Override
@@ -43,12 +51,13 @@ public class EnumerateUp extends Game {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(1, 1, 1, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
 
 		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		sprite.draw(batch);
-		batch.end();
+		// batch.begin();
+		// sprite.draw(batch);
+		// batch.end();
+		super.render();
 	}
 }

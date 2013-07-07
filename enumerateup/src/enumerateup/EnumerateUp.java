@@ -41,6 +41,7 @@ public class EnumerateUp extends Game {
 		sprite.setOrigin(sprite.getWidth() / 2, sprite.getHeight() / 2);
 		sprite.setPosition(-sprite.getWidth() / 2, -sprite.getHeight() / 2);
 		setScreen(new NumbersScreen(batch));
+
 	}
 
 	@Override
@@ -51,13 +52,18 @@ public class EnumerateUp extends Game {
 
 	@Override
 	public void render() {
-		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0.5f, 1);
 		Gdx.gl.glClear(GL10.GL_COLOR_BUFFER_BIT);
+		Gdx.gl10.glEnable(GL10.GL_TEXTURE_2D);
+		Gdx.gl.glEnable(GL10.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
 
 		batch.setProjectionMatrix(camera.combined);
 		// batch.begin();
 		// sprite.draw(batch);
 		// batch.end();
 		super.render();
+		Gdx.gl.glDisable(GL10.GL_BLEND);
+		Gdx.gl10.glDisable(GL10.GL_TEXTURE_2D);
 	}
 }

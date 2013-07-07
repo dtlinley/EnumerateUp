@@ -5,6 +5,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL10;
 import com.badlogic.gdx.graphics.Mesh;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.Texture.TextureFilter;
 import com.badlogic.gdx.graphics.VertexAttribute;
 import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -15,8 +16,8 @@ import enumerateup.EnumerateUp;
 public class Clock implements Renderable {
 
 	private final static int MAX_VERTICES = 241;
-	private final static float TIME_IN_CLOCK = 10;
-	private final static Color COLOR = new Color(1, 1, 1, 0.25f);
+	private final static float TIME_IN_CLOCK = 60;
+	private final static Color COLOR = new Color(0.71f, 0.71f, 0.57f, 0.05f);
 
 	private float time;
 	private boolean done = false;
@@ -25,10 +26,10 @@ public class Clock implements Renderable {
 	private final float x;
 	private final float y;
 	private final float radius;
-	private final Texture texture;
-	private Sprite sprite;
+	private final Sprite face;
 	private final Mesh shade;
 	private final float initialTime;
+	private final Sprite hand;
 
 	/**
 	 * 
@@ -41,12 +42,20 @@ public class Clock implements Renderable {
 		this.x = x;
 		this.y = y;
 		this.radius = radius;
-		this.texture = new Texture(Gdx.files.internal("clock.png"));
-		sprite = new Sprite(texture);
-		sprite.setScale(radius / sprite.getWidth());
-		sprite.setPosition(-sprite.getWidth() / 2 + x, -sprite.getHeight() / 2 + y);
-		this.shade = new Mesh(false, MAX_VERTICES, MAX_VERTICES, new VertexAttribute(Usage.Position, 3, "position"));
-		// new VertexAttribute(Usage.ColorPacked, 4, "color"));
+		Texture faceTexture = new Texture(Gdx.files.internal("clock.png"));
+		faceTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		face = new Sprite(faceTexture);
+		face.setScale(2f * radius / face.getWidth());
+		face.setPosition(-face.getWidth() / 2 + x, -face.getHeight() / 2 + y);
+
+		Texture handTexture = new Texture(Gdx.files.internal("hand.png"));
+		handTexture.setFilter(TextureFilter.Linear, TextureFilter.Linear);
+		hand = new Sprite(handTexture);
+		hand.setScale(2 * radius / hand.getHeight());
+		hand.setPosition(-hand.getWidth() / 2 + x, -hand.getHeight() / 2 + y);
+
+		this.shade = new Mesh(false, MAX_VERTICES, MAX_VERTICES, new VertexAttribute(Usage.Position, 2, "position"),
+				new VertexAttribute(Usage.ColorPacked, 4, "color"));
 		resetMesh();
 	}
 
@@ -55,15 +64,18 @@ public class Clock implements Renderable {
 		if (running) {
 			time -= delta;
 			updateOverlay();
+			hand.setRotation(-getShownTime() * 360f);
 			if (time <= 0) {
 				end();
 			}
 		}
-		// EnumerateUp.getBatch().draw(texture, 100, 100);
-		sprite.draw(EnumerateUp.getBatch());
+		face.draw(EnumerateUp.getBatch());
 		EnumerateUp.getBatch().end();
-		EnumerateUp.getBatch().begin();
+		// FIXME: This is not rendering with proper alpha blending. Proper blending is possible, but it seems something about the
+		// spritebatch rendering is messing it up.
 		shade.render(GL10.GL_TRIANGLE_FAN);
+		EnumerateUp.getBatch().begin();
+		hand.draw(EnumerateUp.getBatch());
 	}
 
 	private void updateOverlay() {
@@ -81,12 +93,20 @@ public class Clock implements Renderable {
 	}
 
 	private Vector2 findNextVertex() {
-		float time = (desiredVertices() - 2) * timeBetweenVertices();
-		double radians = Math.PI * ((time * 2) / TIME_IN_CLOCK);
+		double radians = Math.PI * 2 * getShownTime();
 		Vector2 vec = new Vector2((float) Math.sin(radians), (float) Math.cos(radians));
 		vec.mul(radius);
 		vec.add(x, y);
 		return vec;
+	}
+
+	/**
+	 * The time that should be shown on the clock face, with 0 being 12 o'clock, 0.5 being 6 o'clock and 1 being 12 again
+	 * 
+	 * @return The time to show on the clock face as a number in [0,1]
+	 */
+	private float getShownTime() {
+		return (desiredVertices() - 2) * timeBetweenVertices() / TIME_IN_CLOCK;
 	}
 
 	// Get the desired number of vertices for the shade mesh at this point in time based on the elapsed time, the total time the
@@ -105,17 +125,18 @@ public class Clock implements Renderable {
 			return;
 		}
 
+		// 3 is the number of components a vertex has-- x, y and color. Consider extracting to a static field
 		float vertices[] = new float[(shade.getNumVertices() * 3) + 3];
 		short indices[] = new short[shade.getNumIndices() + 1];
 		if (shade.getNumVertices() > 0)
 			shade.getVertices(vertices);
 		if (shade.getNumIndices() > 0)
 			shade.getIndices(indices);
+
 		indices[indices.length - 1] = (short) (indices.length - 1);
 		vertices[vertices.length - 3] = x;
 		vertices[vertices.length - 2] = y;
-		vertices[vertices.length - 1] = 0;
-		// vertices[vertices.length - 1] = COLOR.toFloatBits();
+		vertices[vertices.length - 1] = COLOR.cpy().toFloatBits();
 
 		shade.setIndices(indices);
 		shade.setVertices(vertices);

@@ -15,12 +15,13 @@ public abstract class PlayScreen implements Screen {
 
 	public PlayScreen(SpriteBatch batch) {
 		this.batch = batch;
-		this.clock = new Clock(90, 0.5f, 0.5f, 0.25f);
+		this.clock = new Clock(30, 0.5f, 0.5f, 0.25f);
 		clock.start();
 	}
 
 	@Override
 	public void render(float delta) {
+		batch.enableBlending();
 		batch.begin();
 		// TODO: render player scores
 		// TODO: render input box
